@@ -18,7 +18,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { supabase } from '../lib/supabase';
 
-const API_URL = "process.env.EXPO_PUBLIC_API_URL"; 
+const API_URL = process.env.EXPO_PUBLIC_API_URL; 
 
 export default function GestaoProvasScreen() {
   const [modo, setModo] = useState<'lista' | 'criar'>('lista');

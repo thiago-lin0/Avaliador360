@@ -4,19 +4,19 @@ import * as ImageManipulator from 'expo-image-manipulator';
 import { router } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Dimensions,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  Vibration,
-  View
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    Vibration,
+    View
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 
 // --- CONFIGURAÇÃO DA API ---
-const API_URL = "process.env.EXPO_PUBLIC_API_URL"; 
+const API_URL = process.env.EXPO_PUBLIC_API_URL; 
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const MASK_WIDTH = SCREEN_WIDTH * 0.85; 
@@ -139,7 +139,6 @@ export default function EscanearGabaritoScreen() {
         
         setLoading(true);
         try {
-            // CORREÇÃO: Alterado de 'nota' para 'nota_final' conforme seu banco
             const { error } = await supabase.from('tb_folha_resposta')
                 .update({ 
                     nota_final: scannedResult.resultado.acertos, 
@@ -228,9 +227,9 @@ const styles = StyleSheet.create({
     containerCenter: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#222' },
     btnPermissao: { backgroundColor: '#4ADE80', padding: 15, borderRadius: 8 },
     btnText: { fontWeight: 'bold' },
-    header: { position: 'absolute', top: 50, width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, alignItems: 'center' },
-    btnClose: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
-    btnFlash: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
+    header: { position: 'absolute', top: 50, width: '100%', flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, alignItems: 'center', zIndex: 999,},
+    btnClose: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
+    btnFlash: { width: 44, height: 44, borderRadius: 22, justifyContent: 'center', alignItems: 'center' },
     tag: { backgroundColor: 'rgba(0,0,0,0.6)', padding: 10, borderRadius: 10 },
     tagTxt: { color: '#FFF', fontWeight: 'bold', fontSize: 12 },
     viewfinder: { flex: 1, justifyContent: 'center', alignItems: 'center' },
