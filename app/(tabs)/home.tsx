@@ -92,14 +92,20 @@ export default function HomeScreen() {
 
         {/* GRID DE BOTÕES (RESTAURADO) */}
         <View style={styles.gridContainer}>
-          <TouchableOpacity style={styles.squareCard}>
+          <TouchableOpacity 
+            style={styles.squareCard}
+            onPress={() => router.push('/configuracao')}
+          >
             <View style={[styles.iconCircle, { backgroundColor: '#E3F2FD' }]}>
               <Ionicons name="people" size={28} color="#2196F3" />
             </View>
             <Text style={styles.squareCardText}>Turmas & Alunos</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.squareCard}>
+          <TouchableOpacity 
+            style={styles.squareCard}
+            onPress={() => router.push('/novo-gabarito')}
+              >
             <View style={[styles.iconCircle, { backgroundColor: '#F3E5F5' }]}>
               <Ionicons name="grid" size={28} color="#9C27B0" />
             </View>
@@ -108,7 +114,10 @@ export default function HomeScreen() {
         </View>
 
         {/* CARD DA CÂMERA */}
-        <TouchableOpacity style={styles.heroCard}>
+        <TouchableOpacity 
+          style={styles.heroCard}
+          onPress={() => router.push('/escanear-gabarito')}
+          >
           <View>
             <Text style={styles.heroTitle}>Ler Gabaritos</Text>
             <Text style={styles.heroSubtitle}>Corrigir via Câmera</Text>
