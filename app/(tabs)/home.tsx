@@ -28,7 +28,6 @@ export default function HomeScreen() {
         return;
       }
 
-      // Busca o professor e faz o JOIN com a escola
       const { data, error } = await supabase
         .from('tb_professor')
         .select(`
@@ -43,8 +42,6 @@ export default function HomeScreen() {
       if (error) throw error;
 
       if (data) {
-        // Tratamento para garantir que tb_escola seja lida corretamente
-        // Se o Supabase retornar como array, pegamos o primeiro item
         const escolaRef = Array.isArray(data.tb_escola) ? data.tb_escola[0] : data.tb_escola;
         
         setProfessor({
@@ -90,7 +87,7 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* GRID DE BOTÕES (RESTAURADO) */}
+        {/* GRID DE BOTÕES */}
         <View style={styles.gridContainer}>
           <TouchableOpacity 
             style={styles.squareCard}
@@ -105,7 +102,7 @@ export default function HomeScreen() {
           <TouchableOpacity 
             style={styles.squareCard}
             onPress={() => router.push('/novo-gabarito')}
-              >
+          >
             <View style={[styles.iconCircle, { backgroundColor: '#F3E5F5' }]}>
               <Ionicons name="grid" size={28} color="#9C27B0" />
             </View>
@@ -117,7 +114,7 @@ export default function HomeScreen() {
         <TouchableOpacity 
           style={styles.heroCard}
           onPress={() => router.push('/escanear-gabarito')}
-          >
+        >
           <View>
             <Text style={styles.heroTitle}>Ler Gabaritos</Text>
             <Text style={styles.heroSubtitle}>Corrigir via Câmera</Text>
@@ -125,6 +122,23 @@ export default function HomeScreen() {
           <View style={styles.heroIconBox}>
             <Ionicons name="camera" size={32} color="#FFF" />
           </View>
+        </TouchableOpacity>
+
+        {/* --- NOVO: BOTÃO DE HISTÓRICO --- */}
+        <TouchableOpacity 
+          style={[styles.wideCard, { marginBottom: 15 }]} 
+          onPress={() => router.push('/historico')}
+        >
+          <View style={styles.wideCardLeft}>
+            <View style={[styles.iconCircleSmall, { backgroundColor: '#E8EAF6' }]}>
+              <Ionicons name="time" size={24} color="#3F51B5" />
+            </View>
+            <View>
+              <Text style={styles.wideCardTitle}>Histórico de Correções</Text>
+              <Text style={styles.wideCardSubtitle}>Últimas provas digitalizadas</Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#CCC" />
         </TouchableOpacity>
 
         {/* CARD DE RELATÓRIOS */}
