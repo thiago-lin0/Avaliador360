@@ -84,7 +84,7 @@ export default function GestaoProvasScreen() {
     setLoadingDownload(true); 
     setModalDownloadVisible(false);
     try {
-      const downloadUrl = `${API_URL}/gerar-pdf-turma/${idTurma}`;
+      const downloadUrl = `${API_URL}/gerar-pdf-turma/${idTurma}?id_prova=${provaSelecionadaParaDownload.id_prova}`;
       const response = await fetch(downloadUrl); // Pre-fetch para segurar o loading
       if (!response.ok) throw new Error("Erro ao gerar PDF.");
       await WebBrowser.openBrowserAsync(downloadUrl);
