@@ -23,10 +23,7 @@
     },
     "android": {
       "package": "com.thiago.avaliador360",
-<<<<<<< HEAD
       "softwareKeyboardLayoutMode": "resize",
-=======
->>>>>>> 9d1bb21580f701a08ffb24ffc1eab71df7003bd0
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",

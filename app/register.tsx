@@ -1,27 +1,21 @@
-// app/register.tsx
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-<<<<<<< HEAD
 import {
   ActivityIndicator,
   Alert,
-  Image, // Importado
-  Keyboard // Importado
-  ,
-  KeyboardAvoidingView, // Importado
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity, // Importado
+  TouchableOpacity,
   TouchableWithoutFeedback,
   View
 } from 'react-native';
-=======
-import { ActivityIndicator, Alert, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
->>>>>>> 9d1bb21580f701a08ffb24ffc1eab71df7003bd0
 import { supabase } from '../lib/supabase';
 
 export default function RegisterScreen() {
@@ -34,23 +28,20 @@ export default function RegisterScreen() {
   const logoImg = require('../assets/images/logo.png');
 
   async function handleRegister() {
-<<<<<<< HEAD
-=======
-    
->>>>>>> 9d1bb21580f701a08ffb24ffc1eab71df7003bd0
     if (!name || !schoolName || !email || !password) {
-        return Alert.alert("Atenção", "Por favor, preencha todos os campos.");
+      return Alert.alert("Atenção", "Por favor, preencha todos os campos.");
     }
 
     setLoading(true);
     
+    // Cadastro no Supabase Auth com metadados
     const { error } = await supabase.auth.signUp({
       email: email,
       password: password,
       options: {
         data: {
           full_name: name,
-          school_name: schoolName, 
+          school_name: schoolName, // Guardamos o nome por enquanto
           role: 'admin_escola'
         }
       }
@@ -70,37 +61,27 @@ export default function RegisterScreen() {
   }
 
   return (
-    // 1. Envolvemos tudo com o KeyboardAvoidingView
+    // KeyboardAvoidingView impede que o teclado cubra os inputs no iOS/Android
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Ionicons name="arrow-back" size={24} color="#333" />
-      </TouchableOpacity>
+      {/* TouchableWithoutFeedback permite fechar o teclado ao clicar fora */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={{ flex: 1 }}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
 
-<<<<<<< HEAD
-      {/* 2. ScrollView permite rolar os campos quando o teclado sobe */}
-      <ScrollView 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* 3. Permite fechar o teclado clicando fora dos inputs */}
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={styles.inner}>
+          <ScrollView 
+            contentContainerStyle={styles.scrollContent}
+            showsVerticalScrollIndicator={false}
+          >
             <View style={styles.header}>
               <Image source={logoImg} style={styles.logo} resizeMode="contain" />
               <Text style={styles.title}>Nova Conta</Text>
               <Text style={styles.subtitle}>Cadastre-se para gerenciar suas provas.</Text>
             </View>
-=======
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.header}>
-          <Image source={logoImg} style={styles.logo} resizeMode="contain" />
-          <Text style={styles.title}>Nova Conta</Text>
-          <Text style={styles.subtitle}>Cadastre-se para gerenciar suas provas.</Text>
-        </View>
->>>>>>> 9d1bb21580f701a08ffb24ffc1eab71df7003bd0
 
             <View style={styles.form}>
               <Text style={styles.label}>Seu Nome Completo</Text>
@@ -152,9 +133,9 @@ export default function RegisterScreen() {
                 )}
               </TouchableOpacity>
             </View>
-          </View>
-        </TouchableWithoutFeedback>
-      </ScrollView>
+          </ScrollView>
+        </View>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }
@@ -164,15 +145,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#F5F7FA',
   },
-<<<<<<< HEAD
-  inner: {
-    flex: 1,
-    justifyContent: 'center',
-  },
   logo: { 
-=======
-    logo: { 
->>>>>>> 9d1bb21580f701a08ffb24ffc1eab71df7003bd0
     width: 100, 
     height: 100,
   },
@@ -180,7 +153,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     padding: 20,
-    paddingTop: 80, // Aumentado para dar espaço ao botão de voltar
+    paddingTop: 100, 
     paddingBottom: 40,
   },
   backButton: {
@@ -188,7 +161,7 @@ const styles = StyleSheet.create({
     top: 50,
     left: 20,
     zIndex: 10,
-    backgroundColor: '#FFF', // Adicionado para destacar o botão
+    backgroundColor: '#FFF',
     padding: 8,
     borderRadius: 20,
     elevation: 2,

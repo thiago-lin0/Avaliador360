@@ -50,7 +50,7 @@ export default function GestaoProvasScreen() {
 
   const alternativas = ['A', 'B', 'C', 'D'];
 
-  // Lógica dinâmica de descritores baseada na matéria selecionada
+  // Lógica dinâmica de descritores: MAT (37) e PORT (21)
   const listaDescritores = Array.from(
     { length: materia === 'MAT' ? 37 : 21 }, 
     (_, i) => `D${i + 1}`
@@ -90,13 +90,9 @@ export default function GestaoProvasScreen() {
     setLoadingDownload(true); 
     setModalDownloadVisible(false);
     try {
-<<<<<<< HEAD
-      const downloadUrl = `${API_URL}/gerar-pdf-turma/${idTurma}`;
-      const response = await fetch(downloadUrl); 
-=======
+      // RESOLVIDO: Mantive a versão com id_prova na URL para evitar erros no servidor
       const downloadUrl = `${API_URL}/gerar-pdf-turma/${idTurma}?id_prova=${provaSelecionadaParaDownload.id_prova}`;
-      const response = await fetch(downloadUrl); // Pre-fetch para segurar o loading
->>>>>>> 9d1bb21580f701a08ffb24ffc1eab71df7003bd0
+      const response = await fetch(downloadUrl); 
       if (!response.ok) throw new Error("Erro ao gerar PDF.");
       await WebBrowser.openBrowserAsync(downloadUrl);
     } catch (error: any) {
@@ -212,7 +208,6 @@ export default function GestaoProvasScreen() {
             data={provas} 
             keyExtractor={i => i.id_prova.toString()} 
             renderItem={({item}) => (
-              // CARD TRANSFORMADO EM BOTÃO DE EDIÇÃO
               <TouchableOpacity style={styles.cardLista} onPress={() => handlePrepararEdicao(item)}>
                 <View style={styles.infoBox}>
                   <Text style={styles.cardTitle}>{item.titulo}</Text>
@@ -221,14 +216,8 @@ export default function GestaoProvasScreen() {
                 </View>
                 <View style={styles.actions}>
                   <TouchableOpacity onPress={() => { setProvaSelecionadaParaDownload(item); setModalDownloadVisible(true); }}>
-<<<<<<< HEAD
+                    {/* RESOLVIDO: Removi a caneta de edição conforme pedido e mantive apenas download e lixeira */}
                     <Ionicons name="cloud-download-outline" size={24} color="#003399" style={{ marginRight: 15 }} />
-=======
-                    <Ionicons name="cloud-download-outline" size={24} color="#003399" style={{ marginRight: 12 }} />
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={() => handlePrepararEdicao(item)}>
-                    <Ionicons name="pencil-outline" size={22} color="#10B981" style={{ marginRight: 12 }} />
->>>>>>> 9d1bb21580f701a08ffb24ffc1eab71df7003bd0
                   </TouchableOpacity>
                   
                   <TouchableOpacity onPress={() => { 
@@ -257,7 +246,6 @@ export default function GestaoProvasScreen() {
           <Text style={styles.label}>Título da Prova</Text>
           <TextInput style={styles.input} value={nomeProva} onChangeText={setNomeProva} placeholder="Ex: Avaliação Bimestral" />
 
-          {/* SELEÇÃO DE MATÉRIA NO FORMULÁRIO */}
           <Text style={styles.label}>Disciplina</Text>
           <View style={styles.materiaContainer}>
             <TouchableOpacity 

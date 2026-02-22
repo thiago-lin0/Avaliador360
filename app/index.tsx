@@ -1,26 +1,20 @@
-// app/index.tsx
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-<<<<<<< HEAD
 import {
   ActivityIndicator,
   Alert,
-  Image, // Importado
-  Keyboard // Importado
-  ,
-  KeyboardAvoidingView, // Importado
-  Platform, // Importado
+  Image,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity, // Importado
+  TouchableOpacity,
   TouchableWithoutFeedback,
   View
 } from 'react-native';
-=======
-import { ActivityIndicator, Alert, Image, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
->>>>>>> 9d1bb21580f701a08ffb24ffc1eab71df7003bd0
 import { supabase } from '../lib/supabase';
 
 export default function LoginScreen() {
@@ -31,6 +25,10 @@ export default function LoginScreen() {
   const logoImg = require('../assets/images/logo.png');
 
   async function handleLogin() {
+    if (!email || !password) {
+      return Alert.alert("Atenção", "Por favor, preencha e-mail e senha.");
+    }
+
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({
       email: email,
@@ -47,44 +45,37 @@ export default function LoginScreen() {
   }
 
   return (
-<<<<<<< HEAD
-    // 1. KeyboardAvoidingView: Ajusta a tela conforme o teclado sobe
+    // KeyboardAvoidingView: Garante que o teclado não cubra os campos de texto
     <KeyboardAvoidingView 
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      {/* 2. ScrollView: Permite rolar a tela se o formulário for maior que o espaço disponível */}
-      <ScrollView 
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* 3. TouchableWithoutFeedback: Fecha o teclado ao clicar fora de um input */}
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      {/* TouchableWithoutFeedback: Permite fechar o teclado clicando em qualquer área vazia */}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContainer}
+          showsVerticalScrollIndicator={false}
+        >
           <View style={styles.inner}>
             
             {/* Cabeçalho / Logo */}
             <View style={styles.header}>
               <Image source={logoImg} style={styles.logo} resizeMode="contain" />
-              <Text style={styles.logoText}>AVALIADOR<Text style={styles.logoBold}> 360</Text></Text>
-              <Text style={styles.subtitle}>Inteligência de dados para uma educação de resultados.</Text>
+              <Text style={styles.logoText}>
+                AVALIADOR<Text style={styles.logoBold}> 360</Text>
+              </Text>
+              <Text style={styles.subtitle}>
+                Inteligência de dados para uma educação de resultados.
+              </Text>
             </View>
-=======
-    <View style={styles.container}>
-      {/* Cabeçalho / Logo */}
-      <View style={styles.header}>
-        <Image source={logoImg} style={styles.logo} resizeMode="contain" />
-        <Text style={styles.logoText}>AVALIADOR<Text style={styles.logoBold}> 360</Text></Text>
-        <Text style={styles.subtitle}>Inteligência de dados para uma educação de resultados.</Text>
-      </View>
->>>>>>> 9d1bb21580f701a08ffb24ffc1eab71df7003bd0
 
-            {/* Formulário */}
+            {/* Formulário de Login */}
             <View style={styles.form}>
               <Text style={styles.label}>E-mail</Text>
               <TextInput
                 style={styles.input}
                 placeholder="exemplo@escola.com"
-                placeholderTextColor="#999"
+                placeholderTextColor="#94A3B8"
                 value={email}
                 onChangeText={setEmail}
                 autoCapitalize="none"
@@ -95,7 +86,7 @@ export default function LoginScreen() {
               <TextInput
                 style={styles.input}
                 placeholder="******"
-                placeholderTextColor="#999"
+                placeholderTextColor="#94A3B8"
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
@@ -117,7 +108,7 @@ export default function LoginScreen() {
                 <Text style={styles.forgotText}>Esqueci minha senha</Text>
               </TouchableOpacity>
 
-              {/* Link para Cadastro */}
+              {/* Link para a tela de Cadastro */}
               <View style={styles.registerContainer}>
                   <Text style={styles.registerText}>Não tem uma conta? </Text>
                   <TouchableOpacity onPress={() => router.push('/register')}>
@@ -127,8 +118,8 @@ export default function LoginScreen() {
             </View>
 
           </View>
-        </TouchableWithoutFeedback>
-      </ScrollView>
+        </ScrollView>
+      </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
   );
 }
@@ -136,12 +127,12 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F7FA',
+    backgroundColor: '#F8FAFC',
   },
   scrollContainer: {
-    flexGrow: 1, // Importante para o ScrollView ocupar todo o espaço
+    flexGrow: 1,
     justifyContent: 'center',
-    padding: 20,
+    padding: 24,
   },
   inner: {
     flex: 1,
@@ -152,60 +143,59 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   logo: { 
-    width: 100, 
-    height: 100,
+    width: 120, 
+    height: 120,
+    marginBottom: 10,
   },
   logoText: {
     fontSize: 32,
-    color: '#0070C0', 
+    color: '#1E293B', 
     fontWeight: '300',
   },
   logoBold: {
     fontWeight: 'bold',
-    color: '#10B981'
+    color: '#2B428C'
   },
   subtitle: {
-    fontSize: 10,
-    color: '#334155',
-    marginTop: 5,
-<<<<<<< HEAD
+    fontSize: 12,
+    color: '#64748B',
+    marginTop: 8,
     textAlign: 'center',
-=======
->>>>>>> 9d1bb21580f701a08ffb24ffc1eab71df7003bd0
-    paddingHorizontal: 30,
+    paddingHorizontal: 20,
+    lineHeight: 18,
   },
   form: {
     backgroundColor: '#FFF',
-    padding: 25,
-    borderRadius: 15,
+    padding: 24,
+    borderRadius: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 10,
+    shadowRadius: 12,
     elevation: 5, 
   },
   label: {
     fontSize: 14,
-    color: '#333',
-    fontWeight: '600',
+    color: '#334155',
+    fontWeight: '700',
     marginBottom: 8,
-    marginTop: 10,
+    marginTop: 12,
   },
   input: {
-    backgroundColor: '#F0F2F5',
-    borderRadius: 8,
-    padding: 12,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 12,
+    padding: 14,
     fontSize: 16,
-    color: '#333',
+    color: '#1E293B',
     borderWidth: 1,
-    borderColor: '#E1E4E8',
+    borderColor: '#E2E8F0',
   },
   button: {
-    backgroundColor: '#0070C0', 
-    padding: 15,
-    borderRadius: 8,
+    backgroundColor: '#2B428C', 
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 25,
+    marginTop: 24,
   },
   buttonText: {
     color: '#FFF',
@@ -217,16 +207,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   forgotText: {
-    color: '#666',
+    color: '#64748B',
     fontSize: 14,
+    fontWeight: '500',
   },
   registerContainer: {
-    marginTop: 30,
+    marginTop: 32,
     flexDirection: 'row',
     justifyContent: 'center',
+    borderTopWidth: 1,
+    borderTopColor: '#F1F5F9',
+    paddingTop: 20,
   },
   registerText: {
-    color: '#666',
+    color: '#64748B',
     fontSize: 14,
   },
   registerLink: {
