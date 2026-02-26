@@ -4,26 +4,23 @@ import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import XLSX from 'xlsx';
 import { supabase } from '../lib/supabase';
+import { useAuthStore } from '../store/useAuthStore'; // <-- O CÉREBRO AQUI
 
 export function useConfiguracao() {
-  // Estados Gerais
+  const { escolaId } = useAuthStore(); // PEGA INSTANTÂNEO DA MEMÓRIA
+
   const [tab, setTab] = useState<'turmas' | 'alunos'>('turmas');
   const [loading, setLoading] = useState(true);
-  const [escolaId, setEscolaId] = useState<number | null>(null);
-  
-  // Estados de Listagem
   const [turmas, setTurmas] = useState<any[]>([]);
   const [alunos, setAlunos] = useState<any[]>([]);
   const [serieExpandida, setSerieExpandida] = useState<number | null>(null);
   const [filtroNome, setFiltroNome] = useState('');
 
-  // Estados Modal Turma
   const [modalTurmaVisible, setModalTurmaVisible] = useState(false);
   const [novaSerie, setNovaSerie] = useState('');
   const [novaTurmaLetra, setNovaTurmaLetra] = useState('');
   const [novoTurno, setNovoTurno] = useState('Manhã');
 
-  // Estados Modal Aluno
   const [modalAlunoVisible, setModalAlunoVisible] = useState(false);
   const [modoAluno, setModoAluno] = useState<'manual' | 'excel'>('manual');
   const [alunoEditando, setAlunoEditando] = useState<any>(null); 
@@ -32,19 +29,14 @@ export function useConfiguracao() {
   const [dropdownAberto, setDropdownAberto] = useState(false);
   const [importando, setImportando] = useState(false);
 
-  useEffect(() => { carregarDadosIniciais(); }, []);
-
-  async function carregarDadosIniciais() {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const { data: prof } = await supabase.from('tb_professor').select('id_escola').eq('auth_id', user.id).single();
-      if (prof?.id_escola) {
-        setEscolaId(prof.id_escola);
-        await Promise.all([fetchTurmas(prof.id_escola), fetchAlunos(prof.id_escola)]);
-      }
-    } catch (e) { console.log(e); } finally { setLoading(false); }
-  }
+  // OLHA COMO FICOU SIMPLES:
+  useEffect(() => { 
+    if (escolaId) {
+      setLoading(true);
+      Promise.all([fetchTurmas(escolaId), fetchAlunos(escolaId)])
+        .finally(() => setLoading(false));
+    }
+  }, [escolaId]);
 
   async function fetchTurmas(idEscola: number) {
     const { data } = await supabase.from('tb_turma').select('*, tb_aluno(count)').eq('id_escola', idEscola);
@@ -67,37 +59,35 @@ export function useConfiguracao() {
   };
 
   async function handleSalvarTurma() {
-    if (!novaSerie || !novaTurmaLetra) return Alert.alert("Erro", "Preencha tudo!");
+    if (!novaSerie || !novaTurmaLetra || !escolaId) return Alert.alert("Erro", "Preencha tudo!");
     try {
       const { error } = await supabase.from('tb_turma').insert([{
         serie: parseInt(novaSerie), turma: novaTurmaLetra.toUpperCase().charAt(0),
         turno: novoTurno, id_escola: escolaId
       }]);
       if (error) throw error;
-      setModalTurmaVisible(false); fetchTurmas(escolaId!);
-      setNovaSerie(''); setNovaTurmaLetra(''); // Limpa form
+      setModalTurmaVisible(false); fetchTurmas(escolaId);
+      setNovaSerie(''); setNovaTurmaLetra('');
     } catch (e: any) { Alert.alert("Erro", e.message); }
   }
 
   async function handleSalvarAluno() {
-    if (!nomeAluno || !idTurmaSelecionada) return Alert.alert("Erro", "Selecione a turma e digite o nome.");
+    if (!nomeAluno || !idTurmaSelecionada || !escolaId) return Alert.alert("Erro", "Selecione a turma e digite o nome.");
     try {
       if (alunoEditando) {
         await supabase.from('tb_aluno').update({ nome_completo: nomeAluno, id_turma: idTurmaSelecionada }).eq('id_aluno', alunoEditando.id_aluno);
       } else {
         await supabase.from('tb_aluno').insert([{ nome_completo: nomeAluno, id_turma: idTurmaSelecionada }]);
       }
-      setModalAlunoVisible(false); fetchAlunos(escolaId!); fetchTurmas(escolaId!);
+      setModalAlunoVisible(false); fetchAlunos(escolaId); fetchTurmas(escolaId);
     } catch (e: any) { Alert.alert("Erro", e.message); }
   }
 
   async function handleImportarXLSX() {
-    if (!idTurmaSelecionada) return Alert.alert("Atenção", "Selecione a turma antes de escolher o arquivo.");
+    if (!idTurmaSelecionada || !escolaId) return Alert.alert("Atenção", "Selecione a turma antes de escolher o arquivo.");
     
     try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      });
+      const result = await DocumentPicker.getDocumentAsync({ type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
       if (result.canceled || !result.assets) return;
 
       setImportando(true);
@@ -111,8 +101,7 @@ export function useConfiguracao() {
           const nome = row[0]?.toString().trim();
           if (!nome || nome.toLowerCase() === 'nome' || nome.length < 3) return null;
           return { nome_completo: nome, id_turma: idTurmaSelecionada };
-        })
-        .filter(a => a !== null);
+        }).filter(a => a !== null);
 
       if (alunosParaInserir.length === 0) throw new Error("Nenhum nome válido encontrado na primeira coluna.");
 
@@ -120,7 +109,7 @@ export function useConfiguracao() {
       if (error) throw error;
 
       Alert.alert("Sucesso", `${alunosParaInserir.length} alunos importados!`);
-      setModalAlunoVisible(false); fetchAlunos(escolaId!); fetchTurmas(escolaId!);
+      setModalAlunoVisible(false); fetchAlunos(escolaId); fetchTurmas(escolaId);
     } catch (e: any) { Alert.alert("Erro", e.message); } finally { setImportando(false); }
   }
 

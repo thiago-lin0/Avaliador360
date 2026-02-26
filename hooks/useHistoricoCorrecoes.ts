@@ -1,22 +1,13 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { useAuthStore } from '../store/useAuthStore'; // <-- AQUI
 
-export interface ProvaFiltro {
-  id_prova: number;
-  titulo: string;
-}
-
-export interface Correcao {
-  id_folha: any;
-  nota_final: number | null;
-  data_correcao: string | null;
-  status: string | null;
-  id_prova: number | null;
-  tb_aluno: { nome_completo: string } | null;
-  tb_prova: { titulo: string; id_escola: number } | null;
-}
+export interface ProvaFiltro { id_prova: number; titulo: string; }
+export interface Correcao { id_folha: any; nota_final: number | null; data_correcao: string | null; status: string | null; id_prova: number | null; tb_aluno: { nome_completo: string } | null; tb_prova: { titulo: string; id_escola: number } | null; }
 
 export function useHistoricoCorrecoes() {
+  const { escolaId } = useAuthStore(); // Direto do Zustand
+
   const [correcoes, setCorrecoes] = useState<Correcao[]>([]);
   const [provasDisponiveis, setProvasDisponiveis] = useState<ProvaFiltro[]>([]);
   const [provaSelecionada, setProvaSelecionada] = useState<number | null>(null);
@@ -24,18 +15,11 @@ export function useHistoricoCorrecoes() {
   const [refreshing, setRefreshing] = useState(false);
 
   const carregarDados = async (idProva: number | null = null) => {
+    if (!escolaId) { setLoading(false); return; } // Checagem imediata
+
     try {
       setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
-      const escolaId = Number(user?.user_metadata?.id_escola);
 
-      if (!escolaId) {
-        console.log("❌ Erro: Usuário sem ID de escola no perfil.");
-        setLoading(false);
-        return;
-      }
-
-      // Busca os Chips (Filtros)
       const { data: fData } = await supabase
         .from('tb_folha_resposta')
         .select(`id_prova, tb_prova!id_prova!inner ( titulo, id_escola )`)
@@ -44,20 +28,13 @@ export function useHistoricoCorrecoes() {
 
       if (fData) {
         const mapa = new Map();
-        fData.forEach((item: any) => {
-          if (item.tb_prova) mapa.set(item.id_prova, item.tb_prova.titulo);
-        });
+        fData.forEach((item: any) => { if (item.tb_prova) mapa.set(item.id_prova, item.tb_prova.titulo); });
         setProvasDisponiveis(Array.from(mapa.entries()).map(([id, t]) => ({ id_prova: id, titulo: t })));
       }
 
-      // Busca o Histórico
       let query = supabase
         .from('tb_folha_resposta')
-        .select(`
-          id_folha, nota_final, data_correcao, status,
-          tb_aluno!id_aluno ( nome_completo ),
-          tb_prova!id_prova!inner ( titulo, id_escola )
-        `)
+        .select(`id_folha, nota_final, data_correcao, status, tb_aluno!id_aluno ( nome_completo ), tb_prova!id_prova!inner ( titulo, id_escola )`)
         .eq('tb_prova.id_escola', escolaId)
         .eq('status', 'CORRIGIDA')
         .order('data_correcao', { ascending: false });
@@ -65,7 +42,6 @@ export function useHistoricoCorrecoes() {
       if (idProva) query = query.eq('id_prova', idProva);
 
       const { data, error } = await query.limit(50);
-
       if (error) throw error;
 
       if (data) {
@@ -76,30 +52,13 @@ export function useHistoricoCorrecoes() {
         }));
         setCorrecoes(formatados as any);
       }
-    } catch (error: any) {
-      console.error('Erro ao buscar histórico:', error.message);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
+    } catch (error: any) { console.error('Erro:', error.message); } finally { setLoading(false); setRefreshing(false); }
   };
 
-  useEffect(() => {
-    carregarDados();
-  }, []);
+  useEffect(() => { if (escolaId) carregarDados(); }, [escolaId]); // Roda quando a escola carregar
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    carregarDados(provaSelecionada);
-  };
+  const onRefresh = () => { setRefreshing(true); carregarDados(provaSelecionada); };
+  const handleSelecionarProva = (id: number | null) => { setProvaSelecionada(id); carregarDados(id); };
 
-  const handleSelecionarProva = (id: number | null) => {
-    setProvaSelecionada(id);
-    carregarDados(id);
-  };
-
-  return {
-    correcoes, provasDisponiveis, provaSelecionada, 
-    loading, refreshing, onRefresh, handleSelecionarProva
-  };
+  return { correcoes, provasDisponiveis, provaSelecionada, loading, refreshing, onRefresh, handleSelecionarProva };
 }

@@ -2,11 +2,13 @@ import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { supabase } from '../lib/supabase';
+import { useAuthStore } from '../store/useAuthStore'; // <-- AQUI
 
 export function useFormProva(idProvaEditando?: string | string[]) {
+  const { user, escolaId } = useAuthStore(); // Memória rápida
+
   const [loadingSalvar, setLoadingSalvar] = useState(false);
   const [turmasDisponiveis, setTurmasDisponiveis] = useState<any[]>([]);
-  const [escolaId, setEscolaId] = useState<number | null>(null);
 
   const [nomeProva, setNomeProva] = useState('');
   const [materia, setMateria] = useState<'MAT' | 'PORT'>('MAT');
@@ -16,22 +18,15 @@ export function useFormProva(idProvaEditando?: string | string[]) {
   const [descritores, setDescritores] = useState<Record<number, string>>({});
 
   useEffect(() => { 
-    carregarDadosIniciais(); 
-  }, [idProvaEditando]);
+    if (escolaId) carregarDadosIniciais(); 
+  }, [idProvaEditando, escolaId]);
 
   async function carregarDadosIniciais() {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      const { data: prof } = await supabase.from('tb_professor').select('id_escola').eq('auth_id', user.id).single();
-      if (prof) {
-        setEscolaId(prof.id_escola);
-        const { data: turmas } = await supabase.from('tb_turma').select('*').eq('id_escola', prof.id_escola);
-        setTurmasDisponiveis(turmas || []);
-      }
+      // Pega as turmas usando o escolaId da memória
+      const { data: turmas } = await supabase.from('tb_turma').select('*').eq('id_escola', escolaId);
+      setTurmasDisponiveis(turmas || []);
 
-      // Se tiver ID, carrega os dados para edição
       if (idProvaEditando) {
         const { data: prova } = await supabase.from('tb_prova').select(`*, tb_aplicacao_prova(id_turma)`).eq('id_prova', idProvaEditando).single();
         if (prova) {
@@ -57,15 +52,15 @@ export function useFormProva(idProvaEditando?: string | string[]) {
   }
 
   async function handleSalvar() {
-    if (!nomeProva || turmasSelecionadas.length === 0) return Alert.alert("Atenção", "Preencha título e turmas.");
+    if (!nomeProva || turmasSelecionadas.length === 0 || !user || !escolaId) return Alert.alert("Atenção", "Preencha título e turmas.");
     const total = parseInt(qtdQuestoes);
 
     setLoadingSalvar(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       let id_prova_final = idProvaEditando;
 
-      const payloadProva = { titulo: nomeProva, materia: materia, id_professor: user?.id, id_escola: escolaId, qtd_questoes: total };
+      // Usando os dados do Zustand diretamente
+      const payloadProva = { titulo: nomeProva, materia: materia, id_professor: user.id, id_escola: escolaId, qtd_questoes: total };
 
       if (idProvaEditando) {
         await supabase.from('tb_prova').update(payloadProva).eq('id_prova', idProvaEditando);
@@ -86,7 +81,6 @@ export function useFormProva(idProvaEditando?: string | string[]) {
       }));
       await supabase.from('tb_questao').insert(questoesParaSalvar);
 
-      // Gera folhas em branco apenas se for nova
       if (!idProvaEditando) {
         const { data: alunos } = await supabase.from('tb_aluno').select('id_aluno').in('id_turma', turmasSelecionadas);
         if (alunos) {
@@ -99,14 +93,10 @@ export function useFormProva(idProvaEditando?: string | string[]) {
       }
 
       Alert.alert("Sucesso!", "Dados salvos com sucesso.");
-      router.back(); // Volta pra lista atualizada!
+      router.back(); 
       
     } catch (e: any) { Alert.alert("Erro", e.message); } finally { setLoadingSalvar(false); }
   }
 
-  return {
-    loadingSalvar, turmasDisponiveis, nomeProva, setNomeProva, materia, setMateria, 
-    turmasSelecionadas, setTurmasSelecionadas, qtdQuestoes, setQtdQuestoes,
-    respostas, setRespostas, descritores, setDescritores, handleSalvar
-  };
+  return { loadingSalvar, turmasDisponiveis, nomeProva, setNomeProva, materia, setMateria, turmasSelecionadas, setTurmasSelecionadas, qtdQuestoes, setQtdQuestoes, respostas, setRespostas, descritores, setDescritores, handleSalvar };
 }

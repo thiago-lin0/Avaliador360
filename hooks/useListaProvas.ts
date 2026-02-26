@@ -2,23 +2,26 @@ import * as WebBrowser from 'expo-web-browser';
 import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 import { supabase } from '../lib/supabase';
+import { useAuthStore } from '../store/useAuthStore'; // <-- AQUI
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export function useListaProvas() {
+  const { user } = useAuthStore(); // Pega direto da memória
+  
   const [provas, setProvas] = useState<any[]>([]);
   const [loadingLista, setLoadingLista] = useState(true);
   const [loadingDownload, setLoadingDownload] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const carregarProvas = useCallback(async () => {
+    if (!user) return;
     setLoadingLista(true);
     try {
-      const { data: { user } } = await supabase.auth.getUser();
       const { data, error } = await supabase
         .from('tb_prova')
         .select(`*, tb_aplicacao_prova (id_turma, tb_turma (serie, turma, turno))`)
-        .eq('id_professor', user?.id)
+        .eq('id_professor', user.id)
         .order('id_prova', { ascending: false });
       
       if (error) throw error;
@@ -29,7 +32,7 @@ export function useListaProvas() {
       setLoadingLista(false); 
       setRefreshing(false); 
     }
-  }, []);
+  }, [user]); // Dependência do user!
 
   async function handleBaixarPDF(idTurma: number, idProva: number) {
     setLoadingDownload(true);
@@ -40,9 +43,7 @@ export function useListaProvas() {
       await WebBrowser.openBrowserAsync(downloadUrl);
     } catch (error: any) {
       Alert.alert("Erro", "Verifique se a API no PC está rodando.");
-    } finally { 
-      setLoadingDownload(false); 
-    }
+    } finally { setLoadingDownload(false); }
   }
 
   async function handleExcluirProva(id_prova: number) {
@@ -55,8 +56,5 @@ export function useListaProvas() {
     ]);
   }
 
-  return {
-    provas, loadingLista, loadingDownload, refreshing, setRefreshing,
-    carregarProvas, handleBaixarPDF, handleExcluirProva
-  };
+  return { provas, loadingLista, loadingDownload, refreshing, setRefreshing, carregarProvas, handleBaixarPDF, handleExcluirProva };
 }
