@@ -1,13 +1,12 @@
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router } from 'expo-router'; // Pode até remover isso se não usar mais embaixo
 import React from 'react';
 import { ActivityIndicator, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { HeroCard, SquareCard, WideCard } from '../../components/DashboardCards';
 import { useProfessorProfile } from '../../hooks/useProfessorProfile';
-import { supabase } from '../../lib/supabase';
+import { useAuthStore } from '../../store/useAuthStore';
 
 export default function HomeScreen() {
-  // 1. A lógica pesada ficou toda abstraída no Hook!
   const { professor, loading } = useProfessorProfile();
 
   if (loading) {
@@ -22,8 +21,9 @@ export default function HomeScreen() {
   const nomeEscola = professor?.tb_escola?.nome || 'Escola não vinculada';
 
   async function handleLogout() {
-    await supabase.auth.signOut();
-    router.replace('/');
+    await useAuthStore.getState().clearSession(); 
+    // APENAS ISSO! O _layout vai perceber que você não tem mais sessão
+    // e vai te chutar suavemente para a tela de Login.
   }
 
   return (
@@ -43,54 +43,23 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* ... Resto do seu código dos Cards (mantém tudo igual) ... */}
         {/* GRID DE BOTÕES */}
         <View style={styles.gridContainer}>
-          <SquareCard 
-            title="Turmas & Alunos" 
-            bgColor="#E3F2FD" 
-            icon={<Ionicons name="people" size={28} color="#2196F3" />} 
-            onPress={() => router.push('/turmaEAlunos')} 
-          />
-          <SquareCard 
-            title="Minhas Provas" 
-            bgColor="#F3E5F5" 
-            icon={<Ionicons name="grid" size={28} color="#9C27B0" />} 
-            onPress={() => router.push('/gestao-provas')} 
-          />
+          <SquareCard title="Turmas & Alunos" bgColor="#E3F2FD" icon={<Ionicons name="people" size={28} color="#2196F3" />} onPress={() => router.push('/turmaEAlunos')} />
+          <SquareCard title="Minhas Provas" bgColor="#F3E5F5" icon={<Ionicons name="grid" size={28} color="#9C27B0" />} onPress={() => router.push('/gestao-provas')} />
         </View>
 
-        {/* CARD DA CÂMERA */}
-        <HeroCard 
-          title="Ler Gabaritos" 
-          subtitle="Corrigir via Câmera" 
-          iconName="camera" 
-          onPress={() => router.push('/escanear-gabarito')} 
-        />
+        <HeroCard title="Ler Gabaritos" subtitle="Corrigir via Câmera" iconName="camera" onPress={() => router.push('/escanear-gabarito')} />
 
-        {/* LISTA DE OPÇÕES (Cards Largos) */}
-        <WideCard 
-          title="Histórico de Correções" 
-          subtitle="Últimas provas digitalizadas" 
-          bgColor="#E8EAF6" 
-          icon={<Ionicons name="time" size={24} color="#3F51B5" />} 
-          onPress={() => router.push('/historico')} 
-          style={{ marginBottom: 15 }}
-        />
-
-        <WideCard 
-          title="Relatórios XLSX" 
-          subtitle="Consolidados e Gráficos" 
-          bgColor="#E8F5E9" 
-          icon={<MaterialCommunityIcons name="file-excel" size={24} color="#4CAF50" />} 
-          onPress={() => router.push('/relatorios')} 
-        />
+        <WideCard title="Histórico de Correções" subtitle="Últimas provas digitalizadas" bgColor="#E8EAF6" icon={<Ionicons name="time" size={24} color="#3F51B5" />} onPress={() => router.push('/historico')} style={{ marginBottom: 15 }} />
+        <WideCard title="Relatórios XLSX" subtitle="Consolidados e Gráficos" bgColor="#E8F5E9" icon={<MaterialCommunityIcons name="file-excel" size={24} color="#4CAF50" />} onPress={() => router.push('/relatorios')} />
 
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-// Apenas estilos estruturais da tela principal
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#F5F7FA' },
   loadingContainer: { flex: 1, justifyContent: 'center', alignItems: 'center' },

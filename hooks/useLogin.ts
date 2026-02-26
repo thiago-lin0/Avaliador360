@@ -1,7 +1,7 @@
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { Alert } from 'react-native';
 import { supabase } from '../lib/supabase';
+import { useAuthStore } from '../store/useAuthStore';
 
 export function useLogin() {
   const [email, setEmail] = useState('');
@@ -14,6 +14,7 @@ export function useLogin() {
     }
 
     setLoading(true);
+    
     const { error } = await supabase.auth.signInWithPassword({
       email: email,
       password: password,
@@ -23,14 +24,12 @@ export function useLogin() {
       Alert.alert('Erro no Login', error.message);
       setLoading(false);
     } else {
+      // Atualiza a memória com os dados do professor!
+      // Assim que isso terminar, o _layout vai te jogar pra Home.
+      await useAuthStore.getState().loadUserProfile();
       setLoading(false);
-      router.replace('/home'); 
     }
   }
 
-  return {
-    email, setEmail,
-    password, setPassword,
-    loading, handleLogin
-  };
+  return { email, setEmail, password, setPassword, loading, handleLogin };
 }
